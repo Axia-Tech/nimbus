@@ -21,10 +21,10 @@
 //! key it authors.
 
 use cumulus_client_consensus_common::{
-	ParachainBlockImport, ParachainCandidate, ParachainConsensus,
+	AllychainBlockImport, AllychainCandidate, AllychainConsensus,
 };
 use cumulus_primitives_core::{
-	relay_chain::v1::{Block as PBlock, Hash as PHash, ParachainHost},
+	relay_chain::v1::{Block as PBlock, Hash as PHash, AllychainHost},
 	ParaId, PersistedValidationData,
 };
 pub use import_queue::import_queue;
@@ -56,7 +56,7 @@ pub struct NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP> {
 	_phantom: PhantomData<B>,
 	proposer_factory: Arc<Mutex<PF>>,
 	create_inherent_data_providers: Arc<CIDP>,
-	block_import: Arc<futures::lock::Mutex<ParachainBlockImport<BI>>>,
+	block_import: Arc<futures::lock::Mutex<AllychainBlockImport<BI>>>,
 	relay_chain_client: Arc<RClient>,
 	relay_chain_backend: Arc<RBackend>,
 	allychain_client: Arc<ParaClient>,
@@ -85,7 +85,7 @@ impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> NimbusConsensus<B, PF, BI, 
 where
 	B: BlockT,
 	RClient: ProvideRuntimeApi<PBlock>,
-	RClient::Api: ParachainHost<PBlock>,
+	RClient::Api: AllychainHost<PBlock>,
 	RBackend: Backend<PBlock>,
 	ParaClient: ProvideRuntimeApi<B>,
 	CIDP: CreateInherentDataProviders<B, (PHash, PersistedValidationData, NimbusId)>,
@@ -106,7 +106,7 @@ where
 			para_id,
 			proposer_factory: Arc::new(Mutex::new(proposer_factory)),
 			create_inherent_data_providers: Arc::new(create_inherent_data_providers),
-			block_import: Arc::new(futures::lock::Mutex::new(ParachainBlockImport::new(
+			block_import: Arc::new(futures::lock::Mutex::new(AllychainBlockImport::new(
 				block_import,
 			))),
 			relay_chain_backend: axia_backend,
@@ -154,12 +154,12 @@ where
 }
 
 #[async_trait::async_trait]
-impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> ParachainConsensus<B>
+impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> AllychainConsensus<B>
 	for NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP>
 where
 	B: BlockT,
 	RClient: ProvideRuntimeApi<PBlock> + Send + Sync,
-	RClient::Api: ParachainHost<PBlock>,
+	RClient::Api: AllychainHost<PBlock>,
 	RBackend: Backend<PBlock>,
 	BI: BlockImport<B> + Send + Sync,
 	PF: Environment<B> + Send + Sync,
@@ -178,7 +178,7 @@ where
 		parent: &B::Header,
 		relay_parent: PHash,
 		validation_data: &PersistedValidationData,
-	) -> Option<ParachainCandidate<B>> {
+	) -> Option<AllychainCandidate<B>> {
 		// Design decision: We will check the keystore for any available keys. Then we will iterate
 		// those keys until we find one that is eligible. If none are eligible, we skip this slot.
 		// If multiple are eligible, we only author with the first one.
@@ -342,7 +342,7 @@ where
 		let post_block = B::new(post_header, extrinsics);
 
 		// Returning the block WITH the seal for distribution around the network.
-		Some(ParachainCandidate { block: post_block, proof })
+		Some(AllychainCandidate { block: post_block, proof })
 	}
 }
 
@@ -365,7 +365,7 @@ pub struct BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP> {
 
 /// Build the [`NimbusConsensus`].
 ///
-/// Returns a boxed [`ParachainConsensus`].
+/// Returns a boxed [`AllychainConsensus`].
 pub fn build_nimbus_consensus<Block, PF, BI, RBackend, ParaClient, CIDP>(
 	BuildNimbusConsensusParams {
 		para_id,
@@ -378,7 +378,7 @@ pub fn build_nimbus_consensus<Block, PF, BI, RBackend, ParaClient, CIDP>(
 		keystore,
 		skip_prediction,
 	}: BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP>,
-) -> Box<dyn ParachainConsensus<Block>>
+) -> Box<dyn AllychainConsensus<Block>>
 where
 	Block: BlockT,
 	PF: Environment<Block> + Send + Sync + 'static,
@@ -473,7 +473,7 @@ where
 	}
 
 	/// Build the nimbus consensus.
-	fn build(self) -> Box<dyn ParachainConsensus<Block>>
+	fn build(self) -> Box<dyn AllychainConsensus<Block>>
 	where
 		ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
 	{
@@ -500,7 +500,7 @@ where
 	ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
 	CIDP: CreateInherentDataProviders<Block, (PHash, PersistedValidationData, NimbusId)> + 'static,
 {
-	type Output = Box<dyn ParachainConsensus<Block>>;
+	type Output = Box<dyn AllychainConsensus<Block>>;
 
 	fn execute_with_client<PClient, Api, PBackend>(self, client: Arc<PClient>) -> Self::Output
 	where

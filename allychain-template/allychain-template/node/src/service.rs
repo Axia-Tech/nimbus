@@ -13,7 +13,7 @@ use nimbus_consensus::{
 };
 
 // Cumulus Imports
-use cumulus_client_consensus_common::ParachainConsensus;
+use cumulus_client_consensus_common::AllychainConsensus;
 use cumulus_client_network::build_block_announce_validator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
@@ -154,7 +154,7 @@ where
 /// Start a node with the given allychain `Configuration` and relay chain `Configuration`.
 ///
 /// This is the actual implementation that is abstract over the executor and the runtime api.
-#[sc_tracing::logging::prefix_logs_with("Parachain")]
+#[sc_tracing::logging::prefix_logs_with("Allychain")]
 async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
 	allychain_config: Configuration,
 	axia_config: Configuration,
@@ -203,7 +203,7 @@ where
 		Arc<NetworkService<Block, Hash>>,
 		SyncCryptoStorePtr,
 		bool,
-	) -> Result<Box<dyn ParachainConsensus<Block>>, sc_service::Error>,
+	) -> Result<Box<dyn AllychainConsensus<Block>>, sc_service::Error>,
 {
 	if matches!(allychain_config.role, Role::Light) {
 		return Err("Light client not supported!".into())
@@ -375,7 +375,7 @@ pub async fn start_allychain_node(
 						create_inherent_data_providers:
 							move |_, (relay_parent, validation_data, author_id)| {
 								let allychain_inherent =
-								cumulus_primitives_allychain_inherent::ParachainInherentData::create_at_with_client(
+								cumulus_primitives_allychain_inherent::AllychainInherentData::create_at_with_client(
 									relay_parent,
 									&relay_chain_client,
 									&*relay_chain_backend,

@@ -181,7 +181,7 @@ where
 
 	Ok(BasicQueue::new(
 		verifier,
-		Box::new(cumulus_client_consensus_common::ParachainBlockImport::new(
+		Box::new(cumulus_client_consensus_common::AllychainBlockImport::new(
 			block_import,
 		)),
 		None,

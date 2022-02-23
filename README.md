@@ -111,7 +111,7 @@ whether a specified author will be eligible at the specified slot.
 
 ### Nimbus Consensus Worker
 
-Nimbus consensus is the primary client-side consensus worker. It implements the `ParachainConsensus`
+Nimbus consensus is the primary client-side consensus worker. It implements the `AllychainConsensus`
 trait introduced to cumulus in https://github.com/axia-tech/cumulus/pull/329. It is not likely that
 you will need to change this code directly to implement your engine as it is entirely abstracted over
 the filters you use. The consensus engine performs these tasks:
@@ -164,7 +164,7 @@ possible to compose existing filters to build more complex logic from smaller pi
 
 One node authors the block, then it is processed in three different ways.
 
-|                     | Author | Parachain Peer | Relay Validator |
+|                     | Author | Allychain Peer | Relay Validator |
 | ------------------- | ------ | -------------- | --------- |
 | Predict Eligibility |    ✅   |    ❌          |    ❌      |
 | Author Block        |    ✅   |    ❌          |    ❌      |
