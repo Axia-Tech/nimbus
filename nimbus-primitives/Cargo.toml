@@ -16,7 +16,7 @@ sp-api = { git = "https://github.com/axia-tech/axlib", default-features = false,
 sp-application-crypto = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
 sp-runtime = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
 sp-inherents = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
-scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
+scale-info = { git = "https://github.com/axia-tech/scale-info", branch = "v1.0.0", version = "1.0.0", default-features = false, features = ["derive"] }
 
 [features]
 default = ["std"]
