@@ -6,19 +6,19 @@ edition = "2018"
 
 [dependencies]
 # Substrate deps
-sp-consensus = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-inherents = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-runtime = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-core = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-blockchain = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-block-builder = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-api = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sc-client-api = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sc-consensus = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-substrate-prometheus-endpoint = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-keystore = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-application-crypto = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
-sp-std = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-consensus = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-inherents = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-runtime = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-core = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-blockchain = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-block-builder = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-api = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sc-client-api = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sc-consensus = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+axlib-prometheus-endpoint = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-keystore = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-application-crypto = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
+sp-std = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
 
 # Polkadot dependencies
 polkadot-client = { git = "https://github.com/axia-tech/polkadot", branch = "dev", default-features = false }

@@ -45,7 +45,7 @@ cargo build --release
 polkdot-launch ./nimbus-launch-config.json
 ```
 
-To learn more about launching relay-para networks, check out the [cumulus workshop](https://substrate.dev/cumulus-workshop).
+To learn more about launching relay-para networks, check out the [cumulus workshop](https://axlib.dev/cumulus-workshop).
 
 ## Design Overview
 
@@ -127,7 +127,7 @@ For a parachain node to import a sealed block authored by one of its peers, it n
 will remove the nimbus seal and check it against the nimbus consensus digest from the runtime. If that process fails,
 the block is immediately thrown away before the expensive execution even begins. If it succeeds, then
 the pre-block (the part that's left after the seal is stripped) is passed into the
-[import pipeline](https://substrate.dev/docs/en/knowledgebase/advanced/block-import) for processing
+[import pipeline](https://axlib.dev/docs/en/knowledgebase/advanced/block-import) for processing
 and execution. Finally, the locally produced result is compared to the result received across the network.
 
 ### Custom Block Executor
