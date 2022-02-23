@@ -21,7 +21,7 @@ sp-application-crypto = { git = "https://github.com/axia-tech/axlib", branch = "
 sp-std = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
 
 # Polkadot dependencies
-polkadot-client = { git = "https://github.com/axia-tech/polkadot", branch = "dev", default-features = false }
+axia-client = { git = "https://github.com/axia-tech/axia", branch = "dev", default-features = false }
 
 # Cumulus dependencies
 cumulus-client-consensus-common = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }

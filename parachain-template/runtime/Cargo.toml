@@ -73,12 +73,12 @@ pallet-author-inherent = { path = "../../pallets/author-inherent", default-featu
 
 
 # Polkadot Dependencies
-pallet-xcm = { git = "https://github.com/axia-tech/polkadot", default-features = false , branch = "dev" }
-polkadot-parachain = { git = "https://github.com/axia-tech/polkadot", default-features = false , branch = "dev" }
-polkadot-runtime-common = { git = "https://github.com/axia-tech/polkadot", default-features = false, branch = "dev" }
-xcm = { git = "https://github.com/axia-tech/polkadot", default-features = false , branch = "dev" }
-xcm-builder = { git = "https://github.com/axia-tech/polkadot", default-features = false , branch = "dev" }
-xcm-executor = { git = "https://github.com/axia-tech/polkadot", default-features = false , branch = "dev" }
+pallet-xcm = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
+axia-parachain = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
+axia-runtime-common = { git = "https://github.com/axia-tech/axia", default-features = false, branch = "dev" }
+xcm = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
+xcm-builder = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
+xcm-executor = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
 
 [features]
 default = [
@@ -123,8 +123,8 @@ std = [
 	"cumulus-primitives-utility/std",
 	"cumulus-pallet-dmp-queue/std",
 	"parachain-info/std",
-	"polkadot-parachain/std",
-	"polkadot-runtime-common/std",
+	"axia-parachain/std",
+	"axia-runtime-common/std",
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",

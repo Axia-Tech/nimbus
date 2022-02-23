@@ -1,6 +1,6 @@
 {
 	"relaychain": {
-		"bin": "../polkadot/target/release/polkadot",
+		"bin": "../axia/target/release/axia",
 		"chain": "rococo-local",
 		"nodes": [
 			{
@@ -35,7 +35,7 @@
 	},
 	"parachains": [
 		{
-			"bin": "./target/release/polkadot-collator",
+			"bin": "./target/release/axia-collator",
 			"id": "200",
 			"chain": "nimbus",
 			"balance": "1000000000000000000000",

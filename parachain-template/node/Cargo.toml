@@ -88,8 +88,8 @@ cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch
 cumulus-primitives-parachain-inherent = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
 
 # Polkadot dependencies
-polkadot-cli = { git = "https://github.com/axia-tech/polkadot", branch = "dev" }
-polkadot-parachain = { git = "https://github.com/axia-tech/polkadot", branch = "dev" }
-polkadot-primitives = { git = "https://github.com/axia-tech/polkadot", branch = "dev" }
-polkadot-service = { git = "https://github.com/axia-tech/polkadot", branch = "dev" }
-polkadot-test-service = { git = "https://github.com/axia-tech/polkadot", branch = "dev" }
+axia-cli = { git = "https://github.com/axia-tech/axia", branch = "dev" }
+axia-parachain = { git = "https://github.com/axia-tech/axia", branch = "dev" }
+axia-primitives = { git = "https://github.com/axia-tech/axia", branch = "dev" }
+axia-service = { git = "https://github.com/axia-tech/axia", branch = "dev" }
+axia-test-service = { git = "https://github.com/axia-tech/axia", branch = "dev" }

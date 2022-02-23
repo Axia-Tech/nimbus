@@ -35,7 +35,7 @@ use sp_application_crypto::Public as _;
 /// TODO Degisn improvement:
 /// Can we share code with the verifier?
 /// Can this struct take a verifier as an associated type?
-/// Or maybe this will just get simpler in general when https://github.com/paritytech/polkadot/issues/2888 lands
+/// Or maybe this will just get simpler in general when https://github.com/paritytech/axia/issues/2888 lands
 pub struct BlockExecutor<T, I>(sp_std::marker::PhantomData<(T, I)>);
 
 impl<Block, T, I> ExecuteBlock<Block> for BlockExecutor<T, I>

@@ -19,20 +19,20 @@ along with helpful traits for implementing the parts that researchers and develo
 ## Try the Demo
 
 While Nimbus is primarily a development framework meant to be included in other projects, it is useful
-to see a basic network in action. An example network is included in the `polkadot-parachains` example collator. You
+to see a basic network in action. An example network is included in the `axia-parachains` example collator. You
 can build it with `cargo build --release` and launch it like any other cumulus parachian.
 Make sure to specify `--chain nimbus`.
 
 Rather than reiterate how to start a relay-para network here, I'll simply recommend you use the
-excellent [Polkadot Launch](https://github.com/paritytech/polkadot-launch) tool. This repo was tested with version 1.4.1.
+excellent [Polkadot Launch](https://github.com/paritytech/axia-launch) tool. This repo was tested with version 1.4.1.
 A [lauch config file](./nimbus-launch-config.json) is provided.
 
 ```bash
-# Install polkadot launch (I used v1.4.1)
-npm i -g polkadot-launch
+# Install axia launch (I used v1.4.1)
+npm i -g axia-launch
 
-# Build polkadot (I used 82aa404c; check Cargo.lock to be sure)
-cd polkadot
+# Build axia (I used 82aa404c; check Cargo.lock to be sure)
+cd axia
 cargo build --release
 cd ..
 
