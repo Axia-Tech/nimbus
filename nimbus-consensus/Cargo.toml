@@ -6,27 +6,27 @@ edition = "2018"
 
 [dependencies]
 # Substrate deps
-sp-consensus = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-inherents = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-runtime = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-core = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-blockchain = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-block-builder = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-api = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sc-client-api = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sc-consensus = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-substrate-prometheus-endpoint = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-keystore = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-application-crypto = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
-sp-std = { git = "https://github.com/axia-tech/substrate", branch = "moonbeam-polkadot-v0.9.12" }
+sp-consensus = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-inherents = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-runtime = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-core = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-blockchain = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-block-builder = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-api = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sc-client-api = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sc-consensus = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+substrate-prometheus-endpoint = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-keystore = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-application-crypto = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
+sp-std = { git = "https://github.com/axia-tech/substrate", branch = "dev" }
 
 # Polkadot dependencies
-polkadot-client = { git = "https://github.com/axia-tech/polkadot", branch = "moonbeam-polkadot-v0.9.12", default-features = false }
+polkadot-client = { git = "https://github.com/axia-tech/polkadot", branch = "dev", default-features = false }
 
 # Cumulus dependencies
-cumulus-client-consensus-common = { git = "https://github.com/axia-tech/cumulus", branch = "moonbeam-polkadot-v0.9.12" }
-cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch = "moonbeam-polkadot-v0.9.12" }
-cumulus-primitives-parachain-inherent = { git = "https://github.com/axia-tech/cumulus", branch = "moonbeam-polkadot-v0.9.12" }
+cumulus-client-consensus-common = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
+cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
+cumulus-primitives-parachain-inherent = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
 
 # Nimbus Dependencies
 nimbus-primitives = { path = "../nimbus-primitives" }
