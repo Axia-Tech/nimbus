@@ -5,7 +5,7 @@ A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, re
 This project is a fork of the [Substrate Node Template](https://github.com/axlib-developer-hub/axlib-node-template)
 modified to include dependencies required for registering this node as a **parathread** or
 **parachain** to the Rococo **relay chain**.
-Rococo is [AXIA's parachain testnet](https://axia.network/blog/introducing-rococo-axias-parachain-testnet/) 👑.
+Rococo is [AXIA's parachain testnet](https://axia.network/blog/introducing-betanet-axias-parachain-testnet/) 👑.
 
 👉 Learn more about parachains [here](https://wiki.axia.network/docs/learn-parachains), and
 parathreads [here](https://wiki.axia.network/docs/learn-parathreads).
