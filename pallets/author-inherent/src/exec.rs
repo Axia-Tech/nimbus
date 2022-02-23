@@ -1,20 +1,20 @@
-// Copyright 2019-2021 PureStake Inc.
-// This file is part of Nimbus.
+// Copyright 2021 Parity Technologies (UK) Ltd.
+// This file is part of Cumulus.
 
-// Nimbus is free software: you can redistribute it and/or modify
+// Cumulus is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// Nimbus is distributed in the hope that it will be useful,
+// Cumulus is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with Nimbus.  If not, see <http://www.gnu.org/licenses/>.
+// along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
-//! Block executive to be used by relay chain validators when validating allychain blocks built
+//! Block executive to be used by relay chain validators when validating parachain blocks built
 //! with the nimubs consensus family.
 
 use frame_support::traits::ExecuteBlock;
@@ -25,7 +25,7 @@ use sp_runtime::{RuntimeAppPublic, generic::DigestItem};
 use nimbus_primitives::{NIMBUS_ENGINE_ID, NimbusId, digests::CompatibleDigestItem};
 use sp_application_crypto::Public as _;
 
-/// Block executive to be used by relay chain validators when validating allychain blocks built
+/// Block executive to be used by relay chain validators when validating parachain blocks built
 /// with the nimubs consensus family.
 ///
 /// This will strip the seal digest, and confirm that it contains a valid signature
@@ -35,7 +35,7 @@ use sp_application_crypto::Public as _;
 /// TODO Degisn improvement:
 /// Can we share code with the verifier?
 /// Can this struct take a verifier as an associated type?
-/// Or maybe this will just get simpler in general when https://github.com/axia-tech/axia/issues/2888 lands
+/// Or maybe this will just get simpler in general when https://github.com/paritytech/polkadot/issues/2888 lands
 pub struct BlockExecutor<T, I>(sp_std::marker::PhantomData<(T, I)>);
 
 impl<Block, T, I> ExecuteBlock<Block> for BlockExecutor<T, I>
@@ -57,25 +57,34 @@ where
 		debug!(target: "executive", "In hacked Executive. digests after stripping {:?}", header.digest());
 		debug!(target: "executive", "The seal we got {:?}", seal);
 
+		// let sig = match seal {
+		// 	DigestItem::Seal(id, ref sig) if id == NIMBUS_ENGINE_ID => sig.clone(),
+		// 	_ => panic!("HeaderUnsealed"),
+		// };
 		let signature = seal.as_nimbus_seal().unwrap_or_else(||panic!("HeaderUnsealed"));
 
 		debug!(target: "executive", "🪲 Header hash after popping digest {:?}", header.hash());
 
 		debug!(target: "executive", "🪲 Signature according to executive is {:?}", signature);
 
-		// Grab the author information from the preruntime digest
-		//TODO use the trait
-		let claimed_author = header
+		// Grab the digest from the runtime
+		//TODO use the CompatibleDigest trait. Maybe this code should move to the trait.
+		let consensus_digest = header
 			.digest()
 			.logs
 			.iter()
-			.find_map(|digest| {
+			.find(|digest| {
 				match *digest {
-					DigestItem::PreRuntime(id, ref author_id) if id == NIMBUS_ENGINE_ID => Some(author_id.clone()),
-					_ => None,
+					DigestItem::Consensus(id, _) if id == &NIMBUS_ENGINE_ID => true,
+					_ => false,
 				}
 			})
-			.expect("Expected pre-runtime digest that contains author id bytes");
+			.expect("A single consensus digest should be added by the runtime when executing the author inherent.");
+		
+		let claimed_author = match *consensus_digest {
+			DigestItem::Consensus(id, ref author_id) if id == NIMBUS_ENGINE_ID => author_id.clone(),
+			_ => panic!("Expected consensus digest to contains author id bytes"),
+		};
 
 		debug!(target: "executive", "🪲 Claimed Author according to executive is {:?}", claimed_author);
 

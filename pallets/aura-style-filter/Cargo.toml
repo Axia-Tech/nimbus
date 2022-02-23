@@ -1,25 +1,25 @@
 [package]
-authors = ["PureStake"]
+authors = ["Axia-Tech"]
 edition = "2018"
 name = "pallet-aura-style-filter"
 version = "0.1.0"
 
 [dependencies]
-axia-scale-codec = { git = "https://github.com/axia-tech/axia-scale-codec", branch = "v2.3.1", version = "2.3.1", default-features = false, features = ["derive"] }
+parity-scale-codec = { version = "2.0.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0.101", optional = true, features = ["derive"] }
-frame-support = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
-frame-system = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
-sp-core = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
-sp-runtime = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
-sp-std = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
+frame-support = { git = "https://github.com/purestake/substrate", default-features = false, branch = "moonbeam-polkadot-v0.9.12" }
+frame-system = { git = "https://github.com/purestake/substrate", default-features = false, branch = "moonbeam-polkadot-v0.9.12" }
+sp-core = { git = "https://github.com/purestake/substrate", default-features = false, branch = "moonbeam-polkadot-v0.9.12" }
+sp-runtime = { git = "https://github.com/purestake/substrate", default-features = false, branch = "moonbeam-polkadot-v0.9.12" }
+sp-std = { git = "https://github.com/purestake/substrate", branch = "moonbeam-polkadot-v0.9.12", default-features = false }
 nimbus-primitives = { path = "../../nimbus-primitives", default-features = false }
-scale-info = { git = "https://github.com/axia-tech/scale-info", branch = "v1.0.0", version = "1.0.0", default-features = false, features = ["derive"] }
+scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
 
 [features]
 default = ["std"]
 std = [
     "serde",
-    "axia-scale-codec/std",
+    "parity-scale-codec/std",
     "frame-support/std",
     "frame-system/std",
     "nimbus-primitives/std",

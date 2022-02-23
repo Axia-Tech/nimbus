@@ -1,18 +1,18 @@
-// Copyright 2019-2021 PureStake Inc.
-// This file is part of Nimbus.
+// Copyright 2021 Parity Technologies (UK) Ltd.
+// This file is part of Cumulus.
 
-// Nimbus is free software: you can redistribute it and/or modify
+// Cumulus is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// Nimbus is distributed in the hope that it will be useful,
+// Cumulus is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with Nimbus.  If not, see <http://www.gnu.org/licenses/>.
+// along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Small pallet responsible determining which accounts are eligible to author at the current
 //! slot.
@@ -82,18 +82,14 @@ pub mod pallet {
 			debug!(target: "author-filter", "🎲Randomness sample {}: {:?}", i, &randomness);
 
 			// Cast to u32 first so we get consistent results on 32- and 64-bit platforms.
-			use core::convert::TryInto as _;
-			let bytes: [u8; 4] = randomness.to_fixed_bytes()[0..4]
-				.try_into()
-				.expect("H256 has at least 4 bytes; qed");
-			let randomness = u32::from_le_bytes(bytes) as usize;
+			let index = (randomness.to_fixed_bytes()[0] as u32) as usize;
 
 			// Move the selected author from the original vector into the eligible vector
 			// TODO we could short-circuit this check by returning early when the claimed
 			// author is selected. For now I'll leave it like this because:
 			// 1. it is easier to understand what our core filtering logic is
 			// 2. we currently show the entire filtered set in the debug event
-			eligible.push(active.remove(randomness % active.len()));
+			eligible.push(active.remove(index % active.len()));
 		}
 		(eligible, active)
 	}

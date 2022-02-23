@@ -1,4 +1,4 @@
-// Copyright 2019-2021 PureStake Inc.
+// Copyright 2019-2021 Axia-Tech Inc.
 // This file is part of Nimbus.
 
 // Nimbus is free software: you can redistribute it and/or modify
@@ -68,7 +68,7 @@ where
 			parent,
 			// For now we author all blocks in slot zero, which is consistent with  how we are
 			// mocking the relay chain height which the runtime uses for slot beacon.
-			// This should improve. See https://github.com/PureStake/nimbus/issues/3
+			// This should improve. See https://github.com/Axia-Tech/nimbus/issues/3
 			slot_number,
 		);
 

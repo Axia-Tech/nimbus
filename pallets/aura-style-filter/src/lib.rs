@@ -1,24 +1,24 @@
-// Copyright 2019-2021 PureStake Inc.
-// This file is part of Nimbus.
+// Copyright 2021 Parity Technologies (UK) Ltd.
+// This file is part of Cumulus.
 
-// Nimbus is free software: you can redistribute it and/or modify
+// Cumulus is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
-// Nimbus is distributed in the hope that it will be useful,
+// Cumulus is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with Nimbus.  If not, see <http://www.gnu.org/licenses/>.
+// along with Cumulus.  If not, see <http://www.gnu.org/licenses/>.
 
 //! A Nimbus filter for the AuRa consensus algorithm. This filter does not use any entropy, it
 //! simply rotates authors in order. A single author is eligible at each slot.
 //!
-//! In the Axlib ecosystem, this algorithm is typically known as AuRa (authority round).
-//! There is a well known implementation in the main Axlib repository and published at
+//! In the Substrate ecosystem, this algorithm is typically known as AuRa (authority round).
+//! There is a well known implementation in the main Substrate repository and published at
 //! https://crates.io/crates/sc-consensus-aura. There are two primary differences between
 //! the approaches:
 //!
@@ -28,7 +28,7 @@
 //!    Whereas sc-consensus-aura includes the entire consensus stack including block signing, digest
 //!    formats, and slot prediction. This is a lot of overhead for a sipmle round robin
 //!    consensus that basically boils down to this function
-//!    https://github.com/axia-tech/axlib/blob/0f849efc/client/consensus/aura/src/lib.rs#L91-L106
+//!    https://github.com/paritytech/substrate/blob/0f849efc/client/consensus/aura/src/lib.rs#L91-L106
 //!
 //! 2. The Nimbus framework places the author checking logic in the runtime which makes it relatively
 //!    easy for relay chain validators to confirm the author is valid.
