@@ -87,7 +87,7 @@ cumulus-client-service = { git = "https://github.com/axia-tech/cumulus", branch 
 cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
 cumulus-primitives-parachain-inherent = { git = "https://github.com/axia-tech/cumulus", branch = "dev" }
 
-# Polkadot dependencies
+# AXIA dependencies
 axia-cli = { git = "https://github.com/axia-tech/axia", branch = "dev" }
 axia-parachain = { git = "https://github.com/axia-tech/axia", branch = "dev" }
 axia-primitives = { git = "https://github.com/axia-tech/axia", branch = "dev" }

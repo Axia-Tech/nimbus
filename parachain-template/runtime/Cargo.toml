@@ -72,7 +72,7 @@ pallet-author-slot-filter = { path = "../../pallets/author-slot-filter", default
 pallet-author-inherent = { path = "../../pallets/author-inherent", default-features = false }
 
 
-# Polkadot Dependencies
+# AXIA Dependencies
 pallet-xcm = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
 axia-parachain = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
 axia-runtime-common = { git = "https://github.com/axia-tech/axia", default-features = false, branch = "dev" }

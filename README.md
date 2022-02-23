@@ -24,7 +24,7 @@ can build it with `cargo build --release` and launch it like any other cumulus p
 Make sure to specify `--chain nimbus`.
 
 Rather than reiterate how to start a relay-para network here, I'll simply recommend you use the
-excellent [Polkadot Launch](https://github.com/paritytech/axia-launch) tool. This repo was tested with version 1.4.1.
+excellent [AXIA Launch](https://github.com/paritytech/axia-launch) tool. This repo was tested with version 1.4.1.
 A [lauch config file](./nimbus-launch-config.json) is provided.
 
 ```bash
@@ -36,7 +36,7 @@ cd axia
 cargo build --release
 cd ..
 
-# Build Polkadot-parachains example collator
+# Build AXIA-parachains example collator
 cd cumulus
 git checkout nimbus
 cargo build --release

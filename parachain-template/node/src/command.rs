@@ -341,7 +341,7 @@ impl CliConfiguration<Self> for RelayChainCli {
 	}
 
 	fn init<C: SubstrateCli>(&self) -> Result<()> {
-		unreachable!("PolkadotCli is never initialized; qed");
+		unreachable!("AXIACli is never initialized; qed");
 	}
 
 	fn chain_id(&self, is_dev: bool) -> Result<String> {

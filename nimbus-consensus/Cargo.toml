@@ -20,7 +20,7 @@ sp-keystore = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
 sp-application-crypto = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
 sp-std = { git = "https://github.com/axia-tech/axlib", branch = "dev" }
 
-# Polkadot dependencies
+# AXIA dependencies
 axia-client = { git = "https://github.com/axia-tech/axia", branch = "dev", default-features = false }
 
 # Cumulus dependencies
