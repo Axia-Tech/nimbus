@@ -9,7 +9,7 @@
 
 use crate::{NIMBUS_ENGINE_ID, NimbusSignature, NimbusId};
 use sp_runtime::generic::DigestItem;
-use parity_scale_codec::{Encode, Codec};
+use axia_scale_codec::{Encode, Codec};
 use sp_std::fmt::Debug;
 
 /// A digest item which is usable with aura consensus.

@@ -1,5 +1,5 @@
 use sp_inherents::{InherentData, InherentIdentifier};
-use parity_scale_codec::Encode;
+use axia_scale_codec::Encode;
 
 /// The InherentIdentifier for nimbus's author inherent
 pub const INHERENT_IDENTIFIER: InherentIdentifier = *b"author__";

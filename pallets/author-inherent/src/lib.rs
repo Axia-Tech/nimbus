@@ -23,7 +23,7 @@
 use frame_support::{
 	traits::FindAuthor,
 };
-use parity_scale_codec::{Decode, Encode};
+use axia_scale_codec::{Decode, Encode};
 use sp_inherents::{InherentIdentifier, IsFatalError};
 use sp_runtime::{
 	ConsensusEngineId, DigestItem, RuntimeString, RuntimeAppPublic,
@@ -218,7 +218,7 @@ impl InherentError {
 	#[cfg(feature = "std")]
 	pub fn try_from(id: &InherentIdentifier, data: &[u8]) -> Option<Self> {
 		if id == &INHERENT_IDENTIFIER {
-			<InherentError as parity_scale_codec::Decode>::decode(&mut &data[..]).ok()
+			<InherentError as axia_scale_codec::Decode>::decode(&mut &data[..]).ok()
 		} else {
 			None
 		}

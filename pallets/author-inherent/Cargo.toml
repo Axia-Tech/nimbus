@@ -10,7 +10,7 @@ license = 'GPL-3.0-only'
 log = { version = "0.4", default-features = false }
 frame-support = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
 frame-system = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
-parity-scale-codec = { version = "2.0.0", default-features = false, features = ["derive"] }
+axia-scale-codec = { git = "https://github.com/axia-tech/axia-scale-codec", branch = "master", version = "2.3.1", default-features = false, features = ["derive"] }
 sp-application-crypto = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
 sp-authorship = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
 sp-inherents = { git = "https://github.com/axia-tech/axlib", branch = "dev", default-features = false }
@@ -30,7 +30,7 @@ std = [
 	"log/std",
 	"frame-support/std",
 	"frame-system/std",
-	"parity-scale-codec/std",
+	"axia-scale-codec/std",
 	"sp-application-crypto/std",
 	"sp-authorship/std",
 	"sp-inherents/std",
