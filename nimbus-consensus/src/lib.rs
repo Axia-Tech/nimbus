@@ -50,7 +50,7 @@ mod import_queue;
 
 const LOG_TARGET: &str = "filtering-consensus";
 
-/// The implementation of the relay-chain provided consensus for parachains.
+/// The implementation of the relay-chain provided consensus for allychains.
 pub struct NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP> {
 	para_id: ParaId,
 	_phantom: PhantomData<B>,
@@ -59,7 +59,7 @@ pub struct NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP> {
 	block_import: Arc<futures::lock::Mutex<ParachainBlockImport<BI>>>,
 	relay_chain_client: Arc<RClient>,
 	relay_chain_backend: Arc<RBackend>,
-	parachain_client: Arc<ParaClient>,
+	allychain_client: Arc<ParaClient>,
 	keystore: SyncCryptoStorePtr,
 	skip_prediction: bool,
 }
@@ -74,7 +74,7 @@ impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> Clone for NimbusConsensus<B
 			block_import: self.block_import.clone(),
 			relay_chain_backend: self.relay_chain_backend.clone(),
 			relay_chain_client: self.relay_chain_client.clone(),
-			parachain_client: self.parachain_client.clone(),
+			allychain_client: self.allychain_client.clone(),
 			keystore: self.keystore.clone(),
 			skip_prediction: self.skip_prediction,
 		}
@@ -98,7 +98,7 @@ where
 		block_import: BI,
 		axia_client: Arc<RClient>,
 		axia_backend: Arc<RBackend>,
-		parachain_client: Arc<ParaClient>,
+		allychain_client: Arc<ParaClient>,
 		keystore: SyncCryptoStorePtr,
 		skip_prediction: bool,
 	) -> Self {
@@ -111,7 +111,7 @@ where
 			))),
 			relay_chain_backend: axia_backend,
 			relay_chain_client: axia_client,
-			parachain_client,
+			allychain_client,
 			keystore,
 			skip_prediction,
 			_phantom: PhantomData,
@@ -196,7 +196,7 @@ where
 
 		let at = BlockId::Hash(parent.hash());
 		// Get `AuthorFilterAPI` version.
-		let api_version = self.parachain_client.runtime_api()
+		let api_version = self.allychain_client.runtime_api()
 			.api_version::<dyn AuthorFilterAPI<B, NimbusId>>(&at)
 			.expect("Runtime api access to not error.");
 
@@ -219,7 +219,7 @@ where
 			// Have to convert to a typed NimbusId to pass to the runtime API. Maybe this is a clue
 			// That I should be passing Vec<u8> across the wasm boundary?
 			if api_version >= 2 {
-				self.parachain_client.runtime_api().can_author(
+				self.allychain_client.runtime_api().can_author(
 					&at,
 					NimbusId::from_slice(&type_public_pair.1),
 					validation_data.relay_parent_number,
@@ -228,7 +228,7 @@ where
 				.expect("Author API should not return error")
 			} else {
 				#[allow(deprecated)]
-				self.parachain_client.runtime_api().can_author_before_version_2(
+				self.allychain_client.runtime_api().can_author_before_version_2(
 					&at,
 					NimbusId::from_slice(&type_public_pair.1),
 					validation_data.relay_parent_number,
@@ -357,7 +357,7 @@ pub struct BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP> {
 	pub block_import: BI,
 	pub relay_chain_client: axia_client::Client,
 	pub relay_chain_backend: Arc<RBackend>,
-	pub parachain_client: Arc<ParaClient>,
+	pub allychain_client: Arc<ParaClient>,
 	pub keystore: SyncCryptoStorePtr,
 	pub skip_prediction: bool,
 
@@ -374,7 +374,7 @@ pub fn build_nimbus_consensus<Block, PF, BI, RBackend, ParaClient, CIDP>(
 		block_import,
 		relay_chain_client,
 		relay_chain_backend,
-		parachain_client,
+		allychain_client,
 		keystore,
 		skip_prediction,
 	}: BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP>,
@@ -403,7 +403,7 @@ where
 		create_inherent_data_providers,
 		relay_chain_client,
 		relay_chain_backend,
-		parachain_client,
+		allychain_client,
 		keystore,
 		skip_prediction,
 	)
@@ -412,7 +412,7 @@ where
 
 /// Nimbus consensus builder.
 ///
-/// Builds a [`NimbusConsensus`] for a parachain. As this requires
+/// Builds a [`NimbusConsensus`] for a allychain. As this requires
 /// a concrete relay chain client instance, the builder takes a [`axia_client::Client`]
 /// that wraps this concrete instanace. By using [`axia_client::ExecuteWithClient`]
 /// the builder gets access to this concrete instance.
@@ -424,7 +424,7 @@ struct NimbusConsensusBuilder<Block, PF, BI, RBackend, ParaClient,CIDP> {
 	block_import: BI,
 	relay_chain_backend: Arc<RBackend>,
 	relay_chain_client: axia_client::Client,
-	parachain_client: Arc<ParaClient>,
+	allychain_client: Arc<ParaClient>,
 	keystore: SyncCryptoStorePtr,
 	skip_prediction: bool,
 }
@@ -454,7 +454,7 @@ where
 		create_inherent_data_providers: CIDP,
 		relay_chain_client: axia_client::Client,
 		relay_chain_backend: Arc<RBackend>,
-		parachain_client: Arc<ParaClient>,
+		allychain_client: Arc<ParaClient>,
 		keystore: SyncCryptoStorePtr,
 		skip_prediction: bool,
 	) -> Self {
@@ -466,7 +466,7 @@ where
 			create_inherent_data_providers,
 			relay_chain_backend,
 			relay_chain_client,
-			parachain_client,
+			allychain_client,
 			keystore,
 			skip_prediction,
 		}
@@ -518,7 +518,7 @@ where
 			self.block_import,
 			client.clone(),
 			self.relay_chain_backend,
-			self.parachain_client,
+			self.allychain_client,
 			self.keystore,
 			self.skip_prediction,
 		))

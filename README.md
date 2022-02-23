@@ -1,14 +1,14 @@
 # Cumulo -- Nimbus ⛈️
 
-Nimbus is a framework for building parachain consensus systems on [cumulus](https://github.com/axia-tech/cumulus)-based parachains.
+Nimbus is a framework for building allychain consensus systems on [cumulus](https://github.com/axia-tech/cumulus)-based allychains.
 
 Given the regular six-second pulse-like nature of the relay chain, it is natural to think about slot-
-based consensus algorithms for parachains. The parachain network is responsible for liveness and
+based consensus algorithms for allychains. The allychain network is responsible for liveness and
 decetralization and the relay chain is responsible for finality. There is a rich design space for such
 algorithms, yet some tasks are common to all (or most) of them. These common tasks include:
 
 * Signing and signature checking blocks
-* Injecting authorship information into the parachain
+* Injecting authorship information into the allychain
 * Block authorship and import accounting
 * Filtering a large (potentially unbounded) set of potential authors to a smaller (but still potentially unbounded) set.
 * Detecting when it is your turn to author an skipping other slots
@@ -19,7 +19,7 @@ along with helpful traits for implementing the parts that researchers and develo
 ## Try the Demo
 
 While Nimbus is primarily a development framework meant to be included in other projects, it is useful
-to see a basic network in action. An example network is included in the `axia-parachains` example collator. You
+to see a basic network in action. An example network is included in the `axia-allychains` example collator. You
 can build it with `cargo build --release` and launch it like any other cumulus parachian.
 Make sure to specify `--chain nimbus`.
 
@@ -36,7 +36,7 @@ cd axia
 cargo build --release
 cd ..
 
-# Build AXIA-parachains example collator
+# Build AXIA-allychains example collator
 cd cumulus
 git checkout nimbus
 cargo build --release
@@ -123,7 +123,7 @@ the filters you use. The consensus engine performs these tasks:
 
 ### Verifier and Import Queue
 
-For a parachain node to import a sealed block authored by one of its peers, it needs to first check that the signature is valid by the author that was injected into the runtime. This is the job of the verifier. It
+For a allychain node to import a sealed block authored by one of its peers, it needs to first check that the signature is valid by the author that was injected into the runtime. This is the job of the verifier. It
 will remove the nimbus seal and check it against the nimbus consensus digest from the runtime. If that process fails,
 the block is immediately thrown away before the expensive execution even begins. If it succeeds, then
 the pre-block (the part that's left after the seal is stripped) is passed into the
@@ -132,26 +132,26 @@ and execution. Finally, the locally produced result is compared to the result re
 
 ### Custom Block Executor
 
-We've already discussed how parachain nodes (both the one that authors a block, and also its peers)
-import blocks. In a standalone blockchain, that's the end of the story. But for a parachain, we also
-need our relay chain validators to re-execute and validate the parachain block. Validators do this in
+We've already discussed how allychain nodes (both the one that authors a block, and also its peers)
+import blocks. In a standalone blockchain, that's the end of the story. But for a allychain, we also
+need our relay chain validators to re-execute and validate the allychain block. Validators do this in
 a unique way, and entirely in wasm. Providing the `validate_block` function that the validators use
 is the job of the `register_validate_block!` macro from Cumulus.
 
 Typically a cumulus runtime invokes that macro like this:
 ```rust
-cumulus_pallet_parachain_system::register_validate_block!(Runtime, Executive);
+cumulus_pallet_allychain_system::register_validate_block!(Runtime, Executive);
 ```
 
-You can see that the validators use the exact same executive that the parachain nodes do. Now that
+You can see that the validators use the exact same executive that the allychain nodes do. Now that
 we have sealed blocks, that must change. The validators need to strip and verify the seal, and re-execute
-the pre-block just like the parachain nodes did. And without access to an offchain verifier, they must
+the pre-block just like the allychain nodes did. And without access to an offchain verifier, they must
 do this all in the runtime. For that purpose, we provide and alternate executive which wraps the normal
 FRAME executive. The wrapper strips and checks the seal, just like the verifier did, and then passes the pre-block to the inner FRAME executive for re-execution.
 
 ## Write Your Own Consensus Logic
 
-If you have an idea for a new slot-based parachain consensus algorithm, Nimbus is a quick way to get
+If you have an idea for a new slot-based allychain consensus algorithm, Nimbus is a quick way to get
 it working! The fastest way to start hacking is to fork this repo and customize the template node.
 
 If you'd rather dive in than read one more sentence, then **start hacking in the `author-slot-filter`

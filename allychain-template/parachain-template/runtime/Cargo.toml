@@ -1,8 +1,8 @@
 [package]
-name = "parachain-template-runtime"
+name = "allychain-template-runtime"
 version = "0.1.0"
 authors = ["Anonymous"]
-description = "A new Cumulus FRAME-based Substrate Runtime, ready for hacking together a parachain."
+description = "A new Cumulus FRAME-based Substrate Runtime, ready for hacking together a allychain."
 license = "Unlicense"
 homepage = "https://axlib.dev"
 repository = "https://github.com/axia-tech/cumulus/"
@@ -56,15 +56,15 @@ pallet-transaction-payment = { git = "https://github.com/axia-tech/axlib", defau
 pallet-transaction-payment-rpc-runtime-api = { git = "https://github.com/axia-tech/axlib", default-features = false , branch = "dev" }
 
 # Cumulus dependencies
-cumulus-pallet-dmp-queue = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-pallet-parachain-system = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-pallet-xcm = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-pallet-xcmp-queue = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-primitives-timestamp = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-cumulus-primitives-utility = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-pallet-collator-selection = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
-parachain-info = { git = "https://github.com/axia-tech/cumulus", branch = "dev", default-features = false }
+cumulus-pallet-dmp-queue = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-pallet-allychain-system = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-pallet-xcm = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-pallet-xcmp-queue = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-primitives-core = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-primitives-timestamp = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+cumulus-primitives-utility = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+pallet-collator-selection = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
+allychain-info = { git = "https://github.com/axia-tech/cumulus", branch = "master", default-features = false }
 
 # Nimbus Dependencies
 nimbus-primitives = { path = "../../nimbus-primitives", default-features = false }
@@ -74,7 +74,7 @@ pallet-author-inherent = { path = "../../pallets/author-inherent", default-featu
 
 # AXIA Dependencies
 pallet-xcm = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
-axia-parachain = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
+axia-allychain = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
 axia-runtime-common = { git = "https://github.com/axia-tech/axia", default-features = false, branch = "dev" }
 xcm = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
 xcm-builder = { git = "https://github.com/axia-tech/axia", default-features = false , branch = "dev" }
@@ -115,15 +115,15 @@ std = [
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
-	"cumulus-pallet-parachain-system/std",
+	"cumulus-pallet-allychain-system/std",
 	"cumulus-pallet-xcm/std",
 	"cumulus-pallet-xcmp-queue/std",
 	"cumulus-primitives-core/std",
 	"cumulus-primitives-timestamp/std",
 	"cumulus-primitives-utility/std",
 	"cumulus-pallet-dmp-queue/std",
-	"parachain-info/std",
-	"axia-parachain/std",
+	"allychain-info/std",
+	"axia-allychain/std",
 	"axia-runtime-common/std",
 	"xcm-builder/std",
 	"xcm-executor/std",

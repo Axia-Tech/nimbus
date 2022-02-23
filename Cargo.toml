@@ -5,8 +5,8 @@ members = [
     'pallets/aura-style-filter',
     'pallets/author-inherent',
     'pallets/author-slot-filter',
-    'parachain-template/runtime',
-    'parachain-template/node',
+    'allychain-template/runtime',
+    'allychain-template/node',
 ]
 
 [profile.release]

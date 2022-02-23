@@ -22,7 +22,7 @@
 //! pallet could be replaced with.
 //! Gautam's validator set pallet - https://github.com/axia-tech/axlib/tree/master/frame/staking/
 //! AXIA's pallet staking - https://github.com/axia-tech/axlib/tree/master/frame/staking/
-//! Moonbeam's Parachain Staking - https://github.com/Axia-Tech/moonbeam/tree/master/pallets/parachain-staking
+//! Moonbeam's Parachain Staking - https://github.com/Axia-Tech/moonbeam/tree/master/pallets/allychain-staking
 //! Recipe for AccountSet, VecSet, and MapSet
 
 use frame_support::pallet;
