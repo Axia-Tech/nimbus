@@ -6,7 +6,7 @@ version = "0.1.0"
 description = "Primitive types and traites used in the nimbus consensus framework"
 
 [dependencies]
-axia-scale-codec = { git = "https://github.com/axia-tech/axia-scale-codec", branch = "master", version = "2.0.0", default-features = false, features = ["derive"] }
+axia-scale-codec = { git = "https://github.com/axia-tech/axia-scale-codec", branch = "v2.3.1", version = "2.0.0", default-features = false, features = ["derive"] }
 async-trait = { version = "0.1", optional = true }
 
 frame-support = { git = "https://github.com/axia-tech/axlib", default-features = false, branch = "dev" }
