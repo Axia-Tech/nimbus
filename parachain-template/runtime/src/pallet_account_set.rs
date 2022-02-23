@@ -20,8 +20,8 @@
 //!
 //! The Substrate ecosystem has a wide variety of real-world solutions and examples of what this
 //! pallet could be replaced with.
-//! Gautam's validator set pallet - https://github.com/paritytech/axlib/tree/master/frame/staking/
-//! AXIA's pallet staking - https://github.com/paritytech/axlib/tree/master/frame/staking/
+//! Gautam's validator set pallet - https://github.com/axia-tech/axlib/tree/master/frame/staking/
+//! AXIA's pallet staking - https://github.com/axia-tech/axlib/tree/master/frame/staking/
 //! Moonbeam's Parachain Staking - https://github.com/Axia-Tech/moonbeam/tree/master/pallets/parachain-staking
 //! Recipe for AccountSet, VecSet, and MapSet
 
