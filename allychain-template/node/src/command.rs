@@ -11,66 +11,25 @@ use allychain_template_runtime::{Block, RuntimeApi};
 use axia_allychain::primitives::AccountIdConversion;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, RuntimeVersion, SharedParams, AxlibCli,
+	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::Block as BlockT;
 use std::{io::Write, net::SocketAddr};
 
-fn load_spec(
-	id: &str,
-	para_id: ParaId,
-) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+fn load_spec(id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config(para_id)),
-		"template-betanet" => Box::new(chain_spec::local_testnet_config(para_id)),
-		"" | "local" => Box::new(chain_spec::local_testnet_config(para_id)),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		"dev" => Box::new(chain_spec::development_config()),
+		"template-betanet" => Box::new(chain_spec::local_testnet_config()),
+		"" | "local" => Box::new(chain_spec::local_testnet_config()),
+		path => Box::new(chain_spec::ChainSpec::from_json_file(
+			std::path::PathBuf::from(path),
+		)?),
 	})
 }
 
-impl AxlibCli for Cli {
-	fn impl_name() -> String {
-		"Allychain Collator Template".into()
-	}
-
-	fn impl_version() -> String {
-		env!("AXLIB_CLI_IMPL_VERSION").into()
-	}
-
-	fn description() -> String {
-		format!(
-			"Allychain Collator Template\n\nThe command-line arguments provided first will be \
-		passed to the allychain node, while the arguments provided after -- will be passed \
-		to the relaychain node.\n\n\
-		{} [allychain-args] -- [relaychain-args]",
-			Self::executable_name()
-		)
-	}
-
-	fn author() -> String {
-		env!("CARGO_PKG_AUTHORS").into()
-	}
-
-	fn support_url() -> String {
-		"https://github.com/axia-tech/cumulus/issues/new".into()
-	}
-
-	fn copyright_start_year() -> i32 {
-		2020
-	}
-
-	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
-		load_spec(id, self.run.allychain_id.unwrap_or(2000).into())
-	}
-
-	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&allychain_template_runtime::VERSION
-	}
-}
-
-impl AxlibCli for RelayChainCli {
+impl SubstrateCli for Cli {
 	fn impl_name() -> String {
 		"Allychain Collator Template".into()
 	}
@@ -82,8 +41,8 @@ impl AxlibCli for RelayChainCli {
 	fn description() -> String {
 		"Allychain Collator Template\n\nThe command-line arguments provided first will be \
 		passed to the allychain node, while the arguments provided after -- will be passed \
-		to the relaychain node.\n\n\
-		allychain-collator [allychain-args] -- [relaychain-args]"
+		to the relay chain node.\n\n\
+		allychain-collator <allychain-args> -- <relay-chain-args>"
 			.into()
 	}
 
@@ -92,7 +51,45 @@ impl AxlibCli for RelayChainCli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/axia-tech/cumulus/issues/new".into()
+		"https://github.com/axiatech/cumulus/issues/new".into()
+	}
+
+	fn copyright_start_year() -> i32 {
+		2020
+	}
+
+	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
+		load_spec(id)
+	}
+
+	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+		&allychain_template_runtime::VERSION
+	}
+}
+
+impl SubstrateCli for RelayChainCli {
+	fn impl_name() -> String {
+		"Allychain Collator Template".into()
+	}
+
+	fn impl_version() -> String {
+		env!("AXLIB_CLI_IMPL_VERSION").into()
+	}
+
+	fn description() -> String {
+		"Allychain Collator Template\n\nThe command-line arguments provided first will be \
+		passed to the allychain node, while the arguments provided after -- will be passed \
+		to the relay chain node.\n\n\
+		allychain-collator <allychain-args> -- <relay-chain-args>"
+			.into()
+	}
+
+	fn author() -> String {
+		env!("CARGO_PKG_AUTHORS").into()
+	}
+
+	fn support_url() -> String {
+		"https://github.com/axiatech/cumulus/issues/new".into()
 	}
 
 	fn copyright_start_year() -> i32 {
@@ -143,37 +140,39 @@ pub fn run() -> Result<()> {
 		Some(Subcommand::BuildSpec(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
-		},
+		}
 		Some(Subcommand::CheckBlock(cmd)) => {
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-		},
+		}
 		Some(Subcommand::ExportBlocks(cmd)) => {
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.database))
 			})
-		},
+		}
 		Some(Subcommand::ExportState(cmd)) => {
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, config.chain_spec))
 			})
-		},
+		}
 		Some(Subcommand::ImportBlocks(cmd)) => {
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.import_queue))
 			})
-		},
+		}
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 
 			runner.sync_run(|config| {
 				let axia_cli = RelayChainCli::new(
 					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relaychain_args.iter()),
+					[RelayChainCli::executable_name()]
+						.iter()
+						.chain(cli.relay_chain_args.iter()),
 				);
 
-				let axia_config = AxlibCli::create_configuration(
+				let axia_config = SubstrateCli::create_configuration(
 					&axia_cli,
 					&axia_cli,
 					config.tokio_handle.clone(),
@@ -182,21 +181,20 @@ pub fn run() -> Result<()> {
 
 				cmd.run(config, axia_config)
 			})
-		},
+		}
 		Some(Subcommand::Revert(cmd)) => {
 			construct_async_run!(|components, cli, cmd, config| {
 				Ok(cmd.run(components.client, components.backend))
 			})
-		},
+		}
 		Some(Subcommand::ExportGenesisState(params)) => {
 			let mut builder = sc_cli::LoggerBuilder::new("");
 			builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
 			let _ = builder.init();
 
-			let block: Block = generate_genesis_block(&load_spec(
-				&params.chain.clone().unwrap_or_default(),
-				params.allychain_id.unwrap_or(2000).into(),
-			)?)?;
+			let spec = load_spec(&params.chain.clone().unwrap_or_default())?;
+			let state_version = Cli::native_runtime_version(&spec).state_version();
+			let block: Block = generate_genesis_block(&spec, state_version)?;
 			let raw_header = block.header().encode();
 			let output_buf = if params.raw {
 				raw_header
@@ -211,7 +209,7 @@ pub fn run() -> Result<()> {
 			}
 
 			Ok(())
-		},
+		}
 		Some(Subcommand::ExportGenesisWasm(params)) => {
 			let mut builder = sc_cli::LoggerBuilder::new("");
 			builder.with_profiling(sc_tracing::TracingReceiver::Log, "");
@@ -232,8 +230,8 @@ pub fn run() -> Result<()> {
 			}
 
 			Ok(())
-		},
-		Some(Subcommand::Benchmark(cmd)) =>
+		}
+		Some(Subcommand::Benchmark(cmd)) => {
 			if cfg!(feature = "runtime-benchmarks") {
 				let runner = cli.create_runner(cmd)?;
 
@@ -242,51 +240,63 @@ pub fn run() -> Result<()> {
 				Err("Benchmarking wasn't enabled when building the node. \
 				You can enable it with `--features runtime-benchmarks`."
 					.into())
-			},
+			}
+		}
 		Some(Subcommand::RunInstantSeal(run_cmd)) => {
 			let runner = cli.create_runner(run_cmd)?;
 			runner.run_node_until_exit(|config| async move {
-				crate::service::start_instant_seal_node(config)
-				.map_err(sc_cli::Error::Service)
+				crate::service::start_instant_seal_node(config).map_err(sc_cli::Error::Service)
 			})
-		},
+		}
 		None => {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 
 			runner.run_node_until_exit(|config| async move {
-				let para_id =
-					chain_spec::Extensions::try_get(&*config.chain_spec).map(|e| e.para_id);
+				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.para_id)
+					.ok_or_else(|| "Could not find allychain ID in chain-spec.")?;
 
 				let axia_cli = RelayChainCli::new(
 					&config,
-					[RelayChainCli::executable_name()].iter().chain(cli.relaychain_args.iter()),
+					[RelayChainCli::executable_name()]
+						.iter()
+						.chain(cli.relay_chain_args.iter()),
 				);
 
-				let id = ParaId::from(cli.run.allychain_id.or(para_id).unwrap_or(2000));
+				let id = ParaId::from(para_id);
 
 				let allychain_account =
 					AccountIdConversion::<axia_primitives::v0::AccountId>::into_account(&id);
 
-				let block: Block =
-					generate_genesis_block(&config.chain_spec).map_err(|e| format!("{:?}", e))?;
+				let state_version =
+					RelayChainCli::native_runtime_version(&config.chain_spec).state_version();
+				let block: Block = generate_genesis_block(&config.chain_spec, state_version)
+					.map_err(|e| format!("{:?}", e))?;
 				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
 				let tokio_handle = config.tokio_handle.clone();
 				let axia_config =
-					AxlibCli::create_configuration(&axia_cli, &axia_cli, tokio_handle)
+					SubstrateCli::create_configuration(&axia_cli, &axia_cli, tokio_handle)
 						.map_err(|err| format!("Relay chain argument error: {}", err))?;
 
 				info!("Allychain id: {:?}", id);
 				info!("Allychain Account: {}", allychain_account);
 				info!("Allychain genesis state: {}", genesis_state);
-				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
+				info!(
+					"Is collating: {}",
+					if config.role.is_authority() {
+						"yes"
+					} else {
+						"no"
+					}
+				);
 
 				crate::service::start_allychain_node(config, axia_config, id)
 					.await
 					.map(|r| r.0)
 					.map_err(Into::into)
 			})
-		},
+		}
 	}
 }
 
@@ -344,18 +354,37 @@ impl CliConfiguration<Self> for RelayChainCli {
 		self.base.base.rpc_ws(default_listen_port)
 	}
 
-	fn prometheus_config(&self, default_listen_port: u16) -> Result<Option<PrometheusConfig>> {
-		self.base.base.prometheus_config(default_listen_port)
+	fn prometheus_config(
+		&self,
+		default_listen_port: u16,
+		chain_spec: &Box<dyn ChainSpec>,
+	) -> Result<Option<PrometheusConfig>> {
+		self.base
+			.base
+			.prometheus_config(default_listen_port, chain_spec)
 	}
 
-	fn init<C: AxlibCli>(&self) -> Result<()> {
+	fn init<F>(
+		&self,
+		_support_url: &String,
+		_impl_version: &String,
+		_logger_hook: F,
+		_config: &sc_service::Configuration,
+	) -> Result<()>
+	where
+		F: FnOnce(&mut sc_cli::LoggerBuilder, &sc_service::Configuration),
+	{
 		unreachable!("AxiaCli is never initialized; qed");
 	}
 
 	fn chain_id(&self, is_dev: bool) -> Result<String> {
 		let chain_id = self.base.base.chain_id(is_dev)?;
 
-		Ok(if chain_id.is_empty() { self.chain_id.clone().unwrap_or_default() } else { chain_id })
+		Ok(if chain_id.is_empty() {
+			self.chain_id.clone().unwrap_or_default()
+		} else {
+			chain_id
+		})
 	}
 
 	fn role(&self, is_dev: bool) -> Result<sc_service::Role> {

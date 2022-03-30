@@ -51,7 +51,7 @@ where
 	AccountPublic::from(get_pair_from_seed::<TPublic>(seed)).into_account()
 }
 
-pub fn development_config(id: ParaId) -> ChainSpec {
+pub fn development_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "ROC".into());
@@ -67,12 +67,10 @@ pub fn development_config(id: ParaId) -> ChainSpec {
 		move || {
 			testnet_genesis(
 				// initial collators.
-				vec![
-					(
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_collator_keys_from_seed("Alice"),
-					),
-				],
+				vec![(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				)],
 				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -87,21 +85,22 @@ pub fn development_config(id: ParaId) -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				id,
+				1000.into(),
 			)
 		},
 		vec![],
 		None,
 		None,
 		None,
+		None,
 		Extensions {
 			relay_chain: "betanet-local".into(), // You MUST set this to the correct network!
-			para_id: id.into(),
+			para_id: 1000,
 		},
 	)
 }
 
-pub fn local_testnet_config(id: ParaId) -> ChainSpec {
+pub fn local_testnet_config() -> ChainSpec {
 	// Give your base currency a unit name and decimal places
 	let mut properties = sc_chain_spec::Properties::new();
 	properties.insert("tokenSymbol".into(), "ROC".into());
@@ -141,7 +140,7 @@ pub fn local_testnet_config(id: ParaId) -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				id,
+				1000.into(),
 			)
 		},
 		// Bootnodes
@@ -150,12 +149,14 @@ pub fn local_testnet_config(id: ParaId) -> ChainSpec {
 		None,
 		// Protocol ID
 		Some("template-local"),
+		// Fork ID
+		None,
 		// Properties
 		Some(properties),
 		// Extensions
 		Extensions {
 			relay_chain: "betanet-local".into(), // You MUST set this to the correct network!
-			para_id: id.into(),
+			para_id: 1000,
 		},
 	)
 }
@@ -170,17 +171,20 @@ fn testnet_genesis(
 			code: allychain_template_runtime::WASM_BINARY
 				.expect("WASM binary was not build, please build it!")
 				.to_vec(),
-			changes_trie_config: Default::default(),
 		},
 		balances: allychain_template_runtime::BalancesConfig {
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|k| (k, 1 << 60))
+				.collect(),
 		},
 		allychain_info: allychain_template_runtime::AllychainInfoConfig { allychain_id: id },
 		author_filter: allychain_template_runtime::AuthorFilterConfig {
 			eligible_ratio: sp_runtime::Percent::from_percent(50),
 		},
 		potential_author_set: allychain_template_runtime::PotentialAuthorSetConfig {
-			mapping: authorities
+			mapping: authorities,
 		},
 		allychain_system: Default::default(),
 	}

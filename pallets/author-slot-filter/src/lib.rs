@@ -42,6 +42,7 @@ pub mod pallet {
 
 	/// The Author Filter pallet
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	/// Configuration trait of this pallet.
@@ -82,7 +83,6 @@ pub mod pallet {
 			debug!(target: "author-filter", "🎲Randomness sample {}: {:?}", i, &randomness);
 
 			// Cast to u32 first so we get consistent results on 32- and 64-bit platforms.
-			use core::convert::TryInto as _;
 			let bytes: [u8; 4] = randomness.to_fixed_bytes()[0..4]
 				.try_into()
 				.expect("H256 has at least 4 bytes; qed");

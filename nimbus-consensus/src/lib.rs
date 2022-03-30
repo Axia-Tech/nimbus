@@ -23,30 +23,28 @@
 use cumulus_client_consensus_common::{
 	AllychainBlockImport, AllychainCandidate, AllychainConsensus,
 };
-use cumulus_primitives_core::{
-	relay_chain::v1::{Block as PBlock, Hash as PHash, AllychainHost},
-	ParaId, PersistedValidationData,
-};
+use cumulus_primitives_core::{relay_chain::v1::Hash as PHash, ParaId, PersistedValidationData};
 pub use import_queue::import_queue;
-use log::{info, warn, debug};
-use parking_lot::Mutex;
-use axia_client::ClientHandle;
-use sc_client_api::Backend;
-use sp_api::{ProvideRuntimeApi, BlockId, ApiExt};
-use sp_application_crypto::CryptoTypePublicPair;
-use sp_consensus::{
-	BlockOrigin, EnableProofRecording, Environment,
-	ProofRecording, Proposal, Proposer,
+use log::{debug, info, warn};
+use nimbus_primitives::{
+	AuthorFilterAPI, CompatibleDigestItem, NimbusApi, NimbusId, NIMBUS_KEY_ID,
 };
+use parking_lot::Mutex;
 use sc_consensus::{BlockImport, BlockImportParams};
+use sp_api::{ApiExt, BlockId, ProvideRuntimeApi};
+use sp_application_crypto::{ByteArray, CryptoTypePublicPair};
+use sp_consensus::{
+	BlockOrigin, EnableProofRecording, Environment, ProofRecording, Proposal, Proposer,
+};
 use sp_inherents::{CreateInherentDataProviders, InherentData, InherentDataProvider};
-use sp_runtime::traits::{Block as BlockT, HashFor, Header as HeaderT, DigestItemFor};
+use sp_keystore::{SyncCryptoStore, SyncCryptoStorePtr};
+use sp_runtime::{
+	traits::{Block as BlockT, Header as HeaderT},
+	DigestItem,
+};
+use std::convert::TryInto;
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 use tracing::error;
-use sp_keystore::{SyncCryptoStorePtr, SyncCryptoStore};
-use sp_core::crypto::Public;
-use std::convert::TryInto;
-use nimbus_primitives::{AuthorFilterAPI, NIMBUS_KEY_ID, NimbusId, NimbusApi, CompatibleDigestItem};
 mod import_queue;
 mod manual_seal;
 pub use manual_seal::NimbusManualSealConsensusDataProvider;
@@ -54,71 +52,67 @@ pub use manual_seal::NimbusManualSealConsensusDataProvider;
 const LOG_TARGET: &str = "filtering-consensus";
 
 /// The implementation of the relay-chain provided consensus for allychains.
-pub struct NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP> {
+pub struct NimbusConsensus<B, PF, BI, ParaClient, CIDP> {
 	para_id: ParaId,
-	_phantom: PhantomData<B>,
 	proposer_factory: Arc<Mutex<PF>>,
 	create_inherent_data_providers: Arc<CIDP>,
 	block_import: Arc<futures::lock::Mutex<AllychainBlockImport<BI>>>,
-	relay_chain_client: Arc<RClient>,
-	relay_chain_backend: Arc<RBackend>,
 	allychain_client: Arc<ParaClient>,
 	keystore: SyncCryptoStorePtr,
 	skip_prediction: bool,
+	_phantom: PhantomData<B>,
 }
 
-impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> Clone for NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP> {
+impl<B, PF, BI, ParaClient, CIDP> Clone for NimbusConsensus<B, PF, BI, ParaClient, CIDP> {
 	fn clone(&self) -> Self {
 		Self {
 			para_id: self.para_id,
-			_phantom: PhantomData,
 			proposer_factory: self.proposer_factory.clone(),
 			create_inherent_data_providers: self.create_inherent_data_providers.clone(),
 			block_import: self.block_import.clone(),
-			relay_chain_backend: self.relay_chain_backend.clone(),
-			relay_chain_client: self.relay_chain_client.clone(),
 			allychain_client: self.allychain_client.clone(),
 			keystore: self.keystore.clone(),
 			skip_prediction: self.skip_prediction,
+			_phantom: PhantomData,
 		}
 	}
 }
 
-impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP>
+impl<B, PF, BI, ParaClient, CIDP> NimbusConsensus<B, PF, BI, ParaClient, CIDP>
 where
 	B: BlockT,
-	RClient: ProvideRuntimeApi<PBlock>,
-	RClient::Api: AllychainHost<PBlock>,
-	RBackend: Backend<PBlock>,
-	ParaClient: ProvideRuntimeApi<B>,
-	CIDP: CreateInherentDataProviders<B, (PHash, PersistedValidationData, NimbusId)>,
+	PF: 'static,
+	BI: 'static,
+	ParaClient: ProvideRuntimeApi<B> + 'static,
+	CIDP: CreateInherentDataProviders<B, (PHash, PersistedValidationData, NimbusId)> + 'static,
 {
 	/// Create a new instance of nimbus consensus.
-	pub fn new(
-		para_id: ParaId,
-		proposer_factory: PF,
-		create_inherent_data_providers: CIDP,
-		block_import: BI,
-		axia_client: Arc<RClient>,
-		axia_backend: Arc<RBackend>,
-		allychain_client: Arc<ParaClient>,
-		keystore: SyncCryptoStorePtr,
-		skip_prediction: bool,
-	) -> Self {
-		Self {
+	pub fn build(
+		BuildNimbusConsensusParams {
+			para_id,
+			proposer_factory,
+			create_inherent_data_providers,
+			block_import,
+			allychain_client,
+			keystore,
+			skip_prediction,
+		}: BuildNimbusConsensusParams<PF, BI, ParaClient, CIDP>,
+	) -> Box<dyn AllychainConsensus<B>>
+	where
+		Self: AllychainConsensus<B>,
+	{
+		Box::new(Self {
 			para_id,
 			proposer_factory: Arc::new(Mutex::new(proposer_factory)),
 			create_inherent_data_providers: Arc::new(create_inherent_data_providers),
 			block_import: Arc::new(futures::lock::Mutex::new(AllychainBlockImport::new(
 				block_import,
 			))),
-			relay_chain_backend: axia_backend,
-			relay_chain_client: axia_client,
 			allychain_client,
 			keystore,
 			skip_prediction,
 			_phantom: PhantomData,
-		}
+		})
 	}
 
 	//TODO Could this be a provided implementation now that we have this async inherent stuff?
@@ -132,7 +126,10 @@ where
 	) -> Option<InherentData> {
 		let inherent_data_providers = self
 			.create_inherent_data_providers
-			.create_inherent_data_providers(parent, (relay_parent, validation_data.clone(), author_id))
+			.create_inherent_data_providers(
+				parent,
+				(relay_parent, validation_data.clone(), author_id),
+			)
 			.await
 			.map_err(|e| {
 				tracing::error!(
@@ -142,7 +139,7 @@ where
 				)
 			})
 			.ok()?;
-		
+
 		inherent_data_providers
 			.create_inherent_data()
 			.map_err(|e| {
@@ -163,13 +160,15 @@ where
 /// to implement the `skip_prediction` feature.
 pub(crate) fn first_available_key(keystore: &dyn SyncCryptoStore) -> Option<CryptoTypePublicPair> {
 	// Get all the available keys
-	let available_keys =
-		SyncCryptoStore::keys(keystore, NIMBUS_KEY_ID)
+	let available_keys = SyncCryptoStore::keys(keystore, NIMBUS_KEY_ID)
 		.expect("keystore should return the keys it has");
 
 	// Print a more helpful message than "not eligible" when there are no keys at all.
 	if available_keys.is_empty() {
-		warn!(target: LOG_TARGET, "🔏 No Nimbus keys available. We will not be able to author.");
+		warn!(
+			target: LOG_TARGET,
+			"🔏 No Nimbus keys available. We will not be able to author."
+		);
 		return None;
 	}
 
@@ -180,37 +179,45 @@ pub(crate) fn first_available_key(keystore: &dyn SyncCryptoStore) -> Option<Cryp
 /// If multiple keys are eligible this function still only returns one
 /// and makes no guarantees which one as that depends on the keystore's iterator behavior.
 /// This is the standard way of determining which key to author with.
-pub(crate) fn first_eligible_key<B: BlockT, C>(client: Arc<C>, keystore: &dyn SyncCryptoStore, parent: &B::Header, slot_number: u32) -> Option<CryptoTypePublicPair>
+pub(crate) fn first_eligible_key<B: BlockT, C>(
+	client: Arc<C>,
+	keystore: &dyn SyncCryptoStore,
+	parent: &B::Header,
+	slot_number: u32,
+) -> Option<CryptoTypePublicPair>
 where
 	C: ProvideRuntimeApi<B>,
 	C::Api: NimbusApi<B>,
 	C::Api: AuthorFilterAPI<B, NimbusId>,
 {
 	// Get all the available keys
-	let available_keys =
-		SyncCryptoStore::keys(keystore, NIMBUS_KEY_ID)
+	let available_keys = SyncCryptoStore::keys(keystore, NIMBUS_KEY_ID)
 		.expect("keystore should return the keys it has");
 
 	// Print a more helpful message than "not eligible" when there are no keys at all.
 	if available_keys.is_empty() {
-		warn!(target: LOG_TARGET, "🔏 No Nimbus keys available. We will not be able to author.");
+		warn!(
+			target: LOG_TARGET,
+			"🔏 No Nimbus keys available. We will not be able to author."
+		);
 		return None;
-	}let at = BlockId::Hash(parent.hash());
+	}
+	let at = BlockId::Hash(parent.hash());
 
 	// helper function for calling the various runtime apis and versions
 	let prediction_helper = |at, nimbus_id: NimbusId, slot: u32, parent| -> bool {
-
 		let has_nimbus_api = client
 			.runtime_api()
 			.has_api::<dyn NimbusApi<B>>(at)
 			.expect("should be able to dynamically detect the api");
-		
+
 		if has_nimbus_api {
 			NimbusApi::can_author(&*client.runtime_api(), at, nimbus_id, slot, parent)
 				.expect("NimbusAPI should not return error")
 		} else {
 			// There are two versions of the author filter, so we do that dynamically also.
-			let api_version = client.runtime_api()
+			let api_version = client
+				.runtime_api()
 				.api_version::<dyn AuthorFilterAPI<B, NimbusId>>(&at)
 				.expect("Runtime api access to not error.")
 				.expect("Should be able to detect author filter version");
@@ -220,12 +227,10 @@ where
 					.expect("Author API should not return error")
 			} else {
 				#[allow(deprecated)]
-				client.runtime_api().can_author_before_version_2(
-					&at,
-					nimbus_id,
-					slot_number,
-				)
-				.expect("Author API version 2 should not return error")
+				client
+					.runtime_api()
+					.can_author_before_version_2(&at, nimbus_id, slot_number)
+					.expect("Author API version 2 should not return error")
 			}
 		}
 	};
@@ -238,7 +243,7 @@ where
 		// That I should be passing Vec<u8> across the wasm boundary?
 		prediction_helper(
 			&at,
-			NimbusId::from_slice(&type_public_pair.1),
+			NimbusId::from_slice(&type_public_pair.1).expect("Nimbus ID is invalid (wrong length)"),
 			slot_number,
 			parent,
 		)
@@ -255,7 +260,11 @@ where
 	maybe_key
 }
 
-pub(crate) fn seal_header<B>(header: &B::Header, keystore: &dyn SyncCryptoStore, type_public_pair: &CryptoTypePublicPair) -> DigestItemFor<B>
+pub(crate) fn seal_header<B>(
+	header: &B::Header,
+	keystore: &dyn SyncCryptoStore,
+	type_public_pair: &CryptoTypePublicPair,
+) -> DigestItem
 where
 	B: BlockT,
 {
@@ -269,41 +278,35 @@ where
 	)
 	.expect("Keystore should be able to sign")
 	.expect("We already checked that the key was present");
-	
-	debug!(
-		target: LOG_TARGET,
-		"The signature is \n{:?}", raw_sig
-	);
+
+	debug!(target: LOG_TARGET, "The signature is \n{:?}", raw_sig);
 
 	let signature = raw_sig
-			.clone()
-			.try_into()
-			.expect("signature bytes produced by keystore should be right length");
-	
-	<DigestItemFor<B> as CompatibleDigestItem>::nimbus_seal(signature)
+		.clone()
+		.try_into()
+		.expect("signature bytes produced by keystore should be right length");
+
+	<DigestItem as CompatibleDigestItem>::nimbus_seal(signature)
 }
 
 #[async_trait::async_trait]
-impl<B, PF, BI, RClient, RBackend, ParaClient, CIDP> AllychainConsensus<B>
-	for NimbusConsensus<B, PF, BI, RClient, RBackend, ParaClient, CIDP>
+impl<B, PF, BI, ParaClient, CIDP> AllychainConsensus<B>
+	for NimbusConsensus<B, PF, BI, ParaClient, CIDP>
 where
 	B: BlockT,
-	RClient: ProvideRuntimeApi<PBlock> + Send + Sync,
-	RClient::Api: AllychainHost<PBlock>,
-	RBackend: Backend<PBlock>,
-	BI: BlockImport<B> + Send + Sync,
-	PF: Environment<B> + Send + Sync,
+	BI: BlockImport<B> + Send + Sync + 'static,
+	PF: Environment<B> + Send + Sync + 'static,
 	PF::Proposer: Proposer<
 		B,
 		Transaction = BI::Transaction,
 		ProofRecording = EnableProofRecording,
 		Proof = <EnableProofRecording as ProofRecording>::Proof,
 	>,
-	ParaClient: ProvideRuntimeApi<B> + Send + Sync,
+	ParaClient: ProvideRuntimeApi<B> + Send + Sync + 'static,
 	// We require the client to provide both runtime apis, but only one will be called
 	ParaClient::Api: AuthorFilterAPI<B, NimbusId>,
 	ParaClient::Api: NimbusApi<B>,
-	CIDP: CreateInherentDataProviders<B, (PHash, PersistedValidationData, NimbusId)>,
+	CIDP: CreateInherentDataProviders<B, (PHash, PersistedValidationData, NimbusId)> + 'static,
 {
 	async fn produce_candidate(
 		&mut self,
@@ -311,35 +314,49 @@ where
 		relay_parent: PHash,
 		validation_data: &PersistedValidationData,
 	) -> Option<AllychainCandidate<B>> {
-
 		let maybe_key = if self.skip_prediction {
 			first_available_key(&*self.keystore)
-		}
-		else {
-			first_eligible_key::<B, ParaClient>(self.allychain_client.clone(), &*self.keystore, parent, validation_data.relay_parent_number)
+		} else {
+			first_eligible_key::<B, ParaClient>(
+				self.allychain_client.clone(),
+				&*self.keystore,
+				parent,
+				validation_data.relay_parent_number,
+			)
 		};
 
 		// If there are no eligible keys, print the log, and exit early.
 		let type_public_pair = match maybe_key {
 			Some(p) => p,
-			None => { return None; }
+			None => {
+				return None;
+			}
 		};
 
 		let proposer_future = self.proposer_factory.lock().init(&parent);
 
 		let proposer = proposer_future
 			.await
+			.map_err(|e| error!(target: LOG_TARGET, error = ?e, "Could not create proposer."))
+			.ok()?;
+
+		let nimbus_id = NimbusId::from_slice(&type_public_pair.1)
 			.map_err(
-				|e| error!(target: LOG_TARGET, error = ?e, "Could not create proposer."),
+				|e| error!(target: LOG_TARGET, error = ?e, "Invalid Nimbus ID (wrong length)."),
 			)
 			.ok()?;
 
-		let inherent_data = self.inherent_data(parent.hash(),&validation_data, relay_parent, NimbusId::from_slice(&type_public_pair.1)).await?;
+		let inherent_data = self
+			.inherent_data(
+				parent.hash(),
+				&validation_data,
+				relay_parent,
+				nimbus_id.clone(),
+			)
+			.await?;
 
 		let inherent_digests = sp_runtime::generic::Digest {
-			logs: vec![
-				CompatibleDigestItem::nimbus_pre_digest(NimbusId::from_slice(&type_public_pair.1)),
-			]
+			logs: vec![CompatibleDigestItem::nimbus_pre_digest(nimbus_id)],
 		};
 
 		let Proposal {
@@ -370,7 +387,7 @@ where
 		block_import_params.post_digests.push(sig_digest.clone());
 		block_import_params.body = Some(extrinsics.clone());
 		block_import_params.state_action = sc_consensus::StateAction::ApplyChanges(
-			sc_consensus::StorageChanges::Changes(storage_changes)
+			sc_consensus::StorageChanges::Changes(storage_changes),
 		);
 
 		// Print the same log line as slots (aura and babe)
@@ -404,7 +421,10 @@ where
 		let post_block = B::new(post_header, extrinsics);
 
 		// Returning the block WITH the seal for distribution around the network.
-		Some(AllychainCandidate { block: post_block, proof })
+		Some(AllychainCandidate {
+			block: post_block,
+			proof,
+		})
 	}
 }
 
@@ -412,181 +432,12 @@ where
 ///
 /// I briefly tried the async keystore approach, but decided to go sync so I can copy
 /// code from Aura. Maybe after it is working, Jeremy can help me go async.
-pub struct BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP> {
+pub struct BuildNimbusConsensusParams<PF, BI, ParaClient, CIDP> {
 	pub para_id: ParaId,
 	pub proposer_factory: PF,
 	pub create_inherent_data_providers: CIDP,
 	pub block_import: BI,
-	pub relay_chain_client: axia_client::Client,
-	pub relay_chain_backend: Arc<RBackend>,
 	pub allychain_client: Arc<ParaClient>,
 	pub keystore: SyncCryptoStorePtr,
 	pub skip_prediction: bool,
-
-}
-
-/// Build the [`NimbusConsensus`].
-///
-/// Returns a boxed [`AllychainConsensus`].
-pub fn build_nimbus_consensus<Block, PF, BI, RBackend, ParaClient, CIDP>(
-	BuildNimbusConsensusParams {
-		para_id,
-		proposer_factory,
-		create_inherent_data_providers,
-		block_import,
-		relay_chain_client,
-		relay_chain_backend,
-		allychain_client,
-		keystore,
-		skip_prediction,
-	}: BuildNimbusConsensusParams<PF, BI, RBackend, ParaClient, CIDP>,
-) -> Box<dyn AllychainConsensus<Block>>
-where
-	Block: BlockT,
-	PF: Environment<Block> + Send + Sync + 'static,
-	PF::Proposer: Proposer<
-		Block,
-		Transaction = BI::Transaction,
-		ProofRecording = EnableProofRecording,
-		Proof = <EnableProofRecording as ProofRecording>::Proof,
-	>,
-	BI: BlockImport<Block> + Send + Sync + 'static,
-	RBackend: Backend<PBlock> + 'static,
-	// Rust bug: https://github.com/rust-lang/rust/issues/24159
-	sc_client_api::StateBackendFor<RBackend, PBlock>: sc_client_api::StateBackend<HashFor<PBlock>>,
-	ParaClient: ProvideRuntimeApi<Block> + Send + Sync + 'static,
-	ParaClient::Api: NimbusApi<Block>,
-	ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
-	CIDP: CreateInherentDataProviders<Block, (PHash, PersistedValidationData, NimbusId)> + 'static,
-{
-	NimbusConsensusBuilder::new(
-		para_id,
-		proposer_factory,
-		block_import,
-		create_inherent_data_providers,
-		relay_chain_client,
-		relay_chain_backend,
-		allychain_client,
-		keystore,
-		skip_prediction,
-	)
-	.build()
-}
-
-/// Nimbus consensus builder.
-///
-/// Builds a [`NimbusConsensus`] for a allychain. As this requires
-/// a concrete relay chain client instance, the builder takes a [`axia_client::Client`]
-/// that wraps this concrete instanace. By using [`axia_client::ExecuteWithClient`]
-/// the builder gets access to this concrete instance.
-struct NimbusConsensusBuilder<Block, PF, BI, RBackend, ParaClient,CIDP> {
-	para_id: ParaId,
-	_phantom: PhantomData<Block>,
-	proposer_factory: PF,
-	create_inherent_data_providers: CIDP,
-	block_import: BI,
-	relay_chain_backend: Arc<RBackend>,
-	relay_chain_client: axia_client::Client,
-	allychain_client: Arc<ParaClient>,
-	keystore: SyncCryptoStorePtr,
-	skip_prediction: bool,
-}
-
-impl<Block, PF, BI, RBackend, ParaClient, CIDP> NimbusConsensusBuilder<Block, PF, BI, RBackend, ParaClient, CIDP>
-where
-	Block: BlockT,
-	// Rust bug: https://github.com/rust-lang/rust/issues/24159
-	sc_client_api::StateBackendFor<RBackend, PBlock>: sc_client_api::StateBackend<HashFor<PBlock>>,
-	PF: Environment<Block> + Send + Sync + 'static,
-	PF::Proposer: Proposer<
-		Block,
-		Transaction = BI::Transaction,
-		ProofRecording = EnableProofRecording,
-		Proof = <EnableProofRecording as ProofRecording>::Proof,
-	>,
-	BI: BlockImport<Block> + Send + Sync + 'static,
-	RBackend: Backend<PBlock> + 'static,
-	ParaClient: ProvideRuntimeApi<Block> + Send + Sync + 'static,
-	CIDP: CreateInherentDataProviders<Block, (PHash, PersistedValidationData, NimbusId)> + 'static,
-{
-	/// Create a new instance of the builder.
-	fn new(
-		para_id: ParaId,
-		proposer_factory: PF,
-		block_import: BI,
-		create_inherent_data_providers: CIDP,
-		relay_chain_client: axia_client::Client,
-		relay_chain_backend: Arc<RBackend>,
-		allychain_client: Arc<ParaClient>,
-		keystore: SyncCryptoStorePtr,
-		skip_prediction: bool,
-	) -> Self {
-		Self {
-			para_id,
-			_phantom: PhantomData,
-			proposer_factory,
-			block_import,
-			create_inherent_data_providers,
-			relay_chain_backend,
-			relay_chain_client,
-			allychain_client,
-			keystore,
-			skip_prediction,
-		}
-	}
-
-	/// Build the nimbus consensus.
-	fn build(self) -> Box<dyn AllychainConsensus<Block>>
-	where
-		ParaClient::Api: NimbusApi<Block>,
-		ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
-	{
-		self.relay_chain_client.clone().execute_with(self)
-	}
-}
-
-impl<Block, PF, BI, RBackend, ParaClient, CIDP> axia_client::ExecuteWithClient
-	for NimbusConsensusBuilder<Block, PF, BI, RBackend, ParaClient, CIDP>
-where
-	Block: BlockT,
-	// Rust bug: https://github.com/rust-lang/rust/issues/24159
-	sc_client_api::StateBackendFor<RBackend, PBlock>: sc_client_api::StateBackend<HashFor<PBlock>>,
-	PF: Environment<Block> + Send + Sync + 'static,
-	PF::Proposer: Proposer<
-		Block,
-		Transaction = BI::Transaction,
-		ProofRecording = EnableProofRecording,
-		Proof = <EnableProofRecording as ProofRecording>::Proof,
-	>,
-	BI: BlockImport<Block> + Send + Sync + 'static,
-	RBackend: Backend<PBlock> + 'static,
-	ParaClient: ProvideRuntimeApi<Block> + Send + Sync + 'static,
-	ParaClient::Api: NimbusApi<Block>,
-	ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
-	CIDP: CreateInherentDataProviders<Block, (PHash, PersistedValidationData, NimbusId)> + 'static,
-{
-	type Output = Box<dyn AllychainConsensus<Block>>;
-
-	fn execute_with_client<PClient, Api, PBackend>(self, client: Arc<PClient>) -> Self::Output
-	where
-		<Api as sp_api::ApiExt<PBlock>>::StateBackend: sp_api::StateBackend<HashFor<PBlock>>,
-		PBackend: Backend<PBlock>,
-		PBackend::State: sp_api::StateBackend<sp_runtime::traits::BlakeTwo256>,
-		Api: axia_client::RuntimeApiCollection<StateBackend = PBackend::State>,
-		PClient: axia_client::AbstractClient<PBlock, PBackend, Api = Api> + 'static,
-		ParaClient::Api: NimbusApi<Block>,
-		ParaClient::Api: AuthorFilterAPI<Block, NimbusId>,
-	{
-		Box::new(NimbusConsensus::new(
-			self.para_id,
-			self.proposer_factory,
-			self.create_inherent_data_providers,
-			self.block_import,
-			client.clone(),
-			self.relay_chain_backend,
-			self.allychain_client,
-			self.keystore,
-			self.skip_prediction,
-		))
-	}
 }

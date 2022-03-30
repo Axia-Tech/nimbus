@@ -2,10 +2,10 @@
 //! This is a minimal solution where staking would be used in practice.
 //! The accounts are set and genesis and never change.
 //!
-//! The Axlib ecosystem has a wide variety of real-world solutions and examples of what this
+//! The Substrate ecosystem has a wide variety of real-world solutions and examples of what this
 //! pallet could be replaced with.
-//! Gautam's validator set pallet - https://github.com/axia-tech/axlib/tree/master/frame/staking/
-//! Axia's pallet staking - https://github.com/axia-tech/axlib/tree/master/frame/staking/
+//! Gautam's validator set pallet - https://github.com/axiatech/substrate/tree/master/frame/staking/
+//! Axia's pallet staking - https://github.com/axiatech/substrate/tree/master/frame/staking/
 //! Axtend's Allychain Staking - https://github.com/PureStake/axtend/tree/master/pallets/allychain-staking
 //! Recipe for AccountSet, VecSet, and MapSet
 
@@ -16,19 +16,20 @@ pub use pallet::*;
 #[pallet]
 pub mod pallet {
 
+	use frame_support::pallet_prelude::*;
 	#[cfg(feature = "std")]
 	use log::warn;
-	use frame_support::pallet_prelude::*;
-	use sp_std::vec::Vec;
 	use nimbus_primitives::{AccountLookup, CanAuthor, NimbusId};
+	use sp_std::vec::Vec;
 
 	/// The Account Set pallet
 	#[pallet::pallet]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	/// Configuration trait of this pallet.
 	#[pallet::config]
-	pub trait Config: frame_system::Config  {}
+	pub trait Config: frame_system::Config {}
 
 	/// The set of accounts that is stored in this pallet.
 	#[pallet::storage]
