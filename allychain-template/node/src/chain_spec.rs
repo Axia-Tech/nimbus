@@ -1,4 +1,4 @@
-use cumulus_primitives_core::ParaId;
+use cumulus_primitives_core::AllyId;
 use allychain_template_runtime::{AccountId, NimbusId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -24,7 +24,7 @@ pub struct Extensions {
 	/// The relay chain of the Allychain.
 	pub relay_chain: String,
 	/// The id of the Allychain.
-	pub para_id: u32,
+	pub ally_id: u32,
 }
 
 impl Extensions {
@@ -95,7 +95,7 @@ pub fn development_config() -> ChainSpec {
 		None,
 		Extensions {
 			relay_chain: "betanet-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			ally_id: 1000,
 		},
 	)
 }
@@ -156,7 +156,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "betanet-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			ally_id: 1000,
 		},
 	)
 }
@@ -164,7 +164,7 @@ pub fn local_testnet_config() -> ChainSpec {
 fn testnet_genesis(
 	authorities: Vec<(AccountId, NimbusId)>,
 	endowed_accounts: Vec<AccountId>,
-	id: ParaId,
+	id: AllyId,
 ) -> allychain_template_runtime::GenesisConfig {
 	allychain_template_runtime::GenesisConfig {
 		system: allychain_template_runtime::SystemConfig {

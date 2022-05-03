@@ -18,7 +18,7 @@ use cumulus_client_network::BlockAnnounceValidator;
 use cumulus_client_service::{
 	prepare_node_config, start_collator, start_full_node, StartCollatorParams, StartFullNodeParams,
 };
-use cumulus_primitives_core::ParaId;
+use cumulus_primitives_core::AllyId;
 use cumulus_primitives_allychain_inherent::{
 	MockValidationDataInherentDataProvider, MockXcmConfig,
 };
@@ -173,7 +173,7 @@ where
 async fn start_node_impl<RuntimeApi, Executor, RB, BIC>(
 	allychain_config: Configuration,
 	axia_config: Configuration,
-	id: ParaId,
+	id: AllyId,
 	_rpc_ext_builder: RB,
 	build_consensus: BIC,
 ) -> sc_service::error::Result<(
@@ -311,7 +311,7 @@ where
 		let spawner = task_manager.spawn_handle();
 
 		let params = StartCollatorParams {
-			para_id: id,
+			ally_id: id,
 			block_status: client.clone(),
 			announce_block,
 			client: client.clone(),
@@ -330,7 +330,7 @@ where
 			client: client.clone(),
 			announce_block,
 			task_manager: &mut task_manager,
-			para_id: id,
+			ally_id: id,
 			relay_chain_interface,
 			relay_chain_slot_duration,
 			import_queue,
@@ -348,7 +348,7 @@ where
 pub async fn start_allychain_node(
 	allychain_config: Configuration,
 	axia_config: Configuration,
-	id: ParaId,
+	id: AllyId,
 ) -> sc_service::error::Result<(
 	TaskManager,
 	Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<TemplateRuntimeExecutor>>>,
@@ -376,7 +376,7 @@ pub async fn start_allychain_node(
 			);
 
 			Ok(NimbusConsensus::build(BuildNimbusConsensusParams {
-				para_id: id,
+				ally_id: id,
 				proposer_factory,
 				block_import: client.clone(),
 				allychain_client: client.clone(),
@@ -494,7 +494,7 @@ pub fn start_instant_seal_node(config: Configuration) -> Result<TaskManager, sc_
 
 		// Create channels for mocked XCM messages.
 		let (_downward_xcm_sender, downward_xcm_receiver) = flume::bounded::<Vec<u8>>(100);
-		let (_hrmp_xcm_sender, hrmp_xcm_receiver) = flume::bounded::<(ParaId, Vec<u8>)>(100);
+		let (_hrmp_xcm_sender, hrmp_xcm_receiver) = flume::bounded::<(AllyId, Vec<u8>)>(100);
 
 		let authorship_future = run_instant_seal(InstantSealParams {
 			block_import: client.clone(),

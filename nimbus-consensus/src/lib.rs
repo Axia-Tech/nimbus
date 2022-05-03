@@ -23,7 +23,7 @@
 use cumulus_client_consensus_common::{
 	AllychainBlockImport, AllychainCandidate, AllychainConsensus,
 };
-use cumulus_primitives_core::{relay_chain::v1::Hash as PHash, ParaId, PersistedValidationData};
+use cumulus_primitives_core::{relay_chain::v1::Hash as PHash, AllyId, PersistedValidationData};
 pub use import_queue::import_queue;
 use log::{debug, info, warn};
 use nimbus_primitives::{
@@ -53,7 +53,7 @@ const LOG_TARGET: &str = "filtering-consensus";
 
 /// The implementation of the relay-chain provided consensus for allychains.
 pub struct NimbusConsensus<B, PF, BI, ParaClient, CIDP> {
-	para_id: ParaId,
+	ally_id: AllyId,
 	proposer_factory: Arc<Mutex<PF>>,
 	create_inherent_data_providers: Arc<CIDP>,
 	block_import: Arc<futures::lock::Mutex<AllychainBlockImport<BI>>>,
@@ -66,7 +66,7 @@ pub struct NimbusConsensus<B, PF, BI, ParaClient, CIDP> {
 impl<B, PF, BI, ParaClient, CIDP> Clone for NimbusConsensus<B, PF, BI, ParaClient, CIDP> {
 	fn clone(&self) -> Self {
 		Self {
-			para_id: self.para_id,
+			ally_id: self.ally_id,
 			proposer_factory: self.proposer_factory.clone(),
 			create_inherent_data_providers: self.create_inherent_data_providers.clone(),
 			block_import: self.block_import.clone(),
@@ -89,7 +89,7 @@ where
 	/// Create a new instance of nimbus consensus.
 	pub fn build(
 		BuildNimbusConsensusParams {
-			para_id,
+			ally_id,
 			proposer_factory,
 			create_inherent_data_providers,
 			block_import,
@@ -102,7 +102,7 @@ where
 		Self: AllychainConsensus<B>,
 	{
 		Box::new(Self {
-			para_id,
+			ally_id,
 			proposer_factory: Arc::new(Mutex::new(proposer_factory)),
 			create_inherent_data_providers: Arc::new(create_inherent_data_providers),
 			block_import: Arc::new(futures::lock::Mutex::new(AllychainBlockImport::new(
@@ -433,7 +433,7 @@ where
 /// I briefly tried the async keystore approach, but decided to go sync so I can copy
 /// code from Aura. Maybe after it is working, Jeremy can help me go async.
 pub struct BuildNimbusConsensusParams<PF, BI, ParaClient, CIDP> {
-	pub para_id: ParaId,
+	pub ally_id: AllyId,
 	pub proposer_factory: PF,
 	pub create_inherent_data_providers: CIDP,
 	pub block_import: BI,

@@ -5,7 +5,7 @@ use crate::{
 };
 use codec::Encode;
 use cumulus_client_service::genesis::generate_genesis_block;
-use cumulus_primitives_core::ParaId;
+use cumulus_primitives_core::AllyId;
 use log::info;
 use allychain_template_runtime::{Block, RuntimeApi};
 use axia_allychain::primitives::AccountIdConversion;
@@ -252,8 +252,8 @@ pub fn run() -> Result<()> {
 			let runner = cli.create_runner(&cli.run.normalize())?;
 
 			runner.run_node_until_exit(|config| async move {
-				let para_id = chain_spec::Extensions::try_get(&*config.chain_spec)
-					.map(|e| e.para_id)
+				let ally_id = chain_spec::Extensions::try_get(&*config.chain_spec)
+					.map(|e| e.ally_id)
 					.ok_or_else(|| "Could not find allychain ID in chain-spec.")?;
 
 				let axia_cli = RelayChainCli::new(
@@ -263,7 +263,7 @@ pub fn run() -> Result<()> {
 						.chain(cli.relay_chain_args.iter()),
 				);
 
-				let id = ParaId::from(para_id);
+				let id = AllyId::from(ally_id);
 
 				let allychain_account =
 					AccountIdConversion::<axia_primitives::v0::AccountId>::into_account(&id);
